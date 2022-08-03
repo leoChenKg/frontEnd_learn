@@ -9,7 +9,8 @@ const BaseConfig = () => {
     entry: './src/index.js',
     output: {
       filename: 'main.js',
-      path: path.resolve(__dirname, 'dist')
+      path: path.resolve(__dirname, 'dist'),
+      publicPath: '/'
     },
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
@@ -35,8 +36,8 @@ const BaseConfig = () => {
       })
     ],
     devServer: {
-      open: true,
-      port: 3000
+      port: 3000,
+      historyApiFallback: true
     }
   }
 }

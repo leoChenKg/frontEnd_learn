@@ -1,6 +1,14 @@
 .app-con {
   height: 100%;
+  position: relative;
 }
 
 .main-con {
+  position: absolute;
+  right: 0;
+  padding: 20px;
+  box-sizing: border-box;
+  height: 100%;
+  width: calc(100% - 250px);
+  overflow-y: auto;
 }
