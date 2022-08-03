@@ -1,7 +1,7 @@
-import { BoxGeometry } from './BoxGeometry'
-import { CircleGeometry } from './CircleGeometry'
-import { ConeGeometry } from './ConeGeometry'
-import { CylinderGeometry } from './CylinderGeometry'
-import { DodecahedronGeometry } from './DodecahedronGeometry'
+import * as BoxGeometry from './BoxGeometry'
+import * as CircleGeometry from './CircleGeometry'
+import * as ConeGeometry from './ConeGeometry'
+import * as CylinderGeometry from './CylinderGeometry'
+import * as DodecahedronGeometry from './DodecahedronGeometry'
 
 export default [BoxGeometry, CircleGeometry, ConeGeometry, CylinderGeometry, DodecahedronGeometry]

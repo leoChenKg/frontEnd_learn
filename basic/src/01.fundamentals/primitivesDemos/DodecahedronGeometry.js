@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import addTitle from '../../utils/addTitle'
+import autoResize from '../../utils/autoResize'
 
 function createObj(geometryParams, color, x) {
   //   DodecahedronGeometry 参数 geometryParams
@@ -13,12 +13,9 @@ function createObj(geometryParams, color, x) {
 }
 
 // 圆柱体
-export function DodecahedronGeometry(container) {
-  addTitle(container, 'DodecahedronGeometry->12面体')
-  const renderer = new THREE.WebGLRenderer({ antialias: true }) //  antialias：true 抗锯齿属性开启
-  renderer.setSize(600, 300) // 设置canvas 大小设置后图形更清晰
+export function Demo(canvas) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true }) //  antialias：true 抗锯齿属性开启
   // renderer.setClearColor(new THREE.Color(0xdcdcdc)) //设置窗口背景颜色为黑
-  container.appendChild(renderer.domElement)
 
   const camera = new THREE.PerspectiveCamera(75, 2, 0.1, 100)
   camera.position.z = 20
@@ -46,6 +43,7 @@ export function DodecahedronGeometry(container) {
   })
 
   requestAnimationFrame(render)
+  autoResize(renderer)
 
   function render(time) {
     time *= 0.001
@@ -59,4 +57,13 @@ export function DodecahedronGeometry(container) {
     renderer.render(scene, camera)
     requestAnimationFrame(render)
   }
+}
+
+export const title = 'DodecahedronGeometry->12面体'
+
+export function Describe() {
+  return <div>describe</div>
+}
+export function DetailInfor() {
+  return <div>DetailInfor</div>
 }

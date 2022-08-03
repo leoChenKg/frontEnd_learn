@@ -1,11 +1,8 @@
 import * as THREE from 'three'
-import addTitle from '../../utils/addTitle'
+import autoResize from '../../utils/autoResize'
 
-export function BoxGeometry(container) {
-  addTitle(container, 'BoxGeometry-长方体')
-  const renderer = new THREE.WebGLRenderer({ antialias: true })
-  renderer.setSize(600, 300)
-  container.appendChild(renderer.domElement)
+export function Demo(canvas) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
 
   const camera = new THREE.PerspectiveCamera(75, 2, 0.1, 100)
   camera.position.z = 20
@@ -36,6 +33,7 @@ export function BoxGeometry(container) {
   scene.add(cube)
 
   requestAnimationFrame(render)
+  autoResize(renderer)
 
   function render(time) {
     time *= 0.001
@@ -47,4 +45,13 @@ export function BoxGeometry(container) {
 
     requestAnimationFrame(render)
   }
+}
+
+export const title = 'BoxGeometry-长方体'
+
+export function Describe() {
+  return <div>describe</div>
+}
+export function DetailInfor() {
+  return <div>DetailInfor</div>
 }

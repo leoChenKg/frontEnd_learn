@@ -1,11 +1,8 @@
 import * as THREE from 'three'
-import addTitle from '../../utils/addTitle'
+import autoResize from '../../utils/autoResize'
 
-export function CircleGeometry(container) {
-  addTitle(container, 'CircleGeometry-圆形、扇形')
-  const renderer = new THREE.WebGLRenderer({ antialias: true })
-  renderer.setSize(600, 300)
-  container.appendChild(renderer.domElement)
+export function Demo(canvas) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
 
   const camera = new THREE.PerspectiveCamera(75, 2, 0.1, 100)
   camera.position.z = 20
@@ -22,7 +19,7 @@ export function CircleGeometry(container) {
 
   /**
    * 平面圆 参数如下
-   */ 
+   */
   const radius = 7 // ui: radius 半径
   const segments = 24 // ui: segments 分段
   const thetaStart = Math.PI * 0.25 // ui: thetaStart 扇形的开始角度位置
@@ -38,6 +35,7 @@ export function CircleGeometry(container) {
   scene.add(obj1, obj2)
 
   requestAnimationFrame(render)
+  autoResize(renderer)
 
   function render(time) {
     time *= 0.001
@@ -51,4 +49,13 @@ export function CircleGeometry(container) {
 
     requestAnimationFrame(render)
   }
+}
+
+export const title = 'CircleGeometry-圆形、扇形'
+
+export function Describe() {
+  return <div>describe</div>
+}
+export function DetailInfor() {
+  return <div>DetailInfor</div>
 }

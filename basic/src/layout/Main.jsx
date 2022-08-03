@@ -1,14 +1,13 @@
-import { useRef, useEffect } from 'react'
+import DemoWrapper from './DemoWrapper'
 
 export default function Primitives({ demos }) {
-  const containerRef = useRef()
-  useEffect(initWebGL, [])
-
-  function initWebGL() {
-    demos.forEach(demo => {
-      demo(containerRef.current)
-    })
-  }
-
-  return <div ref={containerRef}></div>
+  return (
+    <>
+      {demos.map(({ Demo, title, Describe, DetailInfor }) => (
+        <DemoWrapper key={title + 'key'} renderWebGL={Demo} title={title} describe={<Describe />}>
+          <DetailInfor />
+        </DemoWrapper>
+      ))}
+    </>
+  )
 }

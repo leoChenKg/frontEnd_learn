@@ -8,15 +8,18 @@ import Home from './Home'
 export default function Layout(props) {
   const routesList = flatRoutes(routes).filter(route => route.path)
   return (
-    <div className={styles.appCon}>
+    <div className={styles['app-con']}>
       <NavigateBar routes={routes} />
       <div className={styles['main-con']}>
-        <Routes>
-          {routesList.map(route => (
-            <Route key={'route' + route.path} path={route.path} element={route.element} />
-          ))}
-          <Route key="route-home" path="/" element={<Home/>} />
-        </Routes>
+        <div className={styles['main-header']}></div>
+        <div className={styles['routes-con']}>
+          <Routes>
+            {routesList.map(route => (
+              <Route key={'route' + route.path} path={route.path} element={route.element} />
+            ))}
+            <Route key="route-home" path="/" element={<Home />} />
+          </Routes>
+        </div>
       </div>
     </div>
   )

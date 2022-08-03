@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import addTitle from '../../utils/addTitle'
+import autoResize from '../../utils/autoResize'
 
 function createObj(geometryParams, color, x) {
   //   CylinderGeometry 参数 geometryParams
@@ -19,12 +19,9 @@ function createObj(geometryParams, color, x) {
 }
 
 // 圆柱体
-export function CylinderGeometry(container) {
-  addTitle(container, 'CylinderGeometry-柱体、缺角柱体')
-  const renderer = new THREE.WebGLRenderer({ antialias: true }) //  antialias：true 抗锯齿属性开启
-  renderer.setSize(600, 300) // 设置canvas 大小设置后图形更清晰
+export function Demo(canvas) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true }) //  antialias：true 抗锯齿属性开启
   // renderer.setClearColor(new THREE.Color(0xdcdcdc)) //设置窗口背景颜色为黑
-  container.appendChild(renderer.domElement)
 
   const camera = new THREE.PerspectiveCamera(75, 2, 0.1, 100)
   camera.position.z = 20
@@ -52,6 +49,7 @@ export function CylinderGeometry(container) {
   })
 
   requestAnimationFrame(render)
+  autoResize(renderer)
 
   function render(time) {
     time *= 0.001
@@ -65,4 +63,13 @@ export function CylinderGeometry(container) {
     renderer.render(scene, camera)
     requestAnimationFrame(render)
   }
+}
+
+export const title = 'CylinderGeometry-柱体、缺角柱体'
+
+export function Describe() {
+  return <div>describe</div>
+}
+export function DetailInfor() {
+  return <div>DetailInfor</div>
 }

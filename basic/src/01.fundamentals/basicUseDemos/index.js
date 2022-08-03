@@ -1,3 +1,3 @@
-import { BasicUse } from './BasicUse'
+import * as BasicUse from './BasicUse'
 
 export default [BasicUse]

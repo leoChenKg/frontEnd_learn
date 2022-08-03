@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import autoResize from '../../utils/autoResize'
 
 function createCube(geometry, color, x) {
   // 创建材质，反光材质
@@ -9,19 +10,11 @@ function createCube(geometry, color, x) {
   return cube
 }
 
-function addTitle(container, titleText) {
-  const title = document.createElement('div')
-  title.innerText = titleText
-  container.appendChild(title)
-}
-export function BasicUse(container) {
-  addTitle(container, '基本使用')
-
+export function Demo(canvas) {
   // 创建渲染器，把canvas元素传入
-  const renderer = new THREE.WebGLRenderer({ antialias: true })
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
 
-  renderer.setSize(600, 300)
-  container.appendChild(renderer.domElement)
+  // renderer.setSize(600, 300)
 
   // 创建摄像机
   // 参数依次是：视角（弧度）、视锥体截面宽高比、近平面位置、远平面位置（相对于相机位置）
@@ -54,6 +47,7 @@ export function BasicUse(container) {
 
   // 进行渲染
   requestAnimationFrame(render)
+  autoResize(renderer)
 
   function render(time) {
     time *= 0.001
@@ -66,4 +60,13 @@ export function BasicUse(container) {
     renderer.render(scene, camera)
     requestAnimationFrame(render)
   }
+}
+
+export const title = 'Three.js的基本使用'
+
+export function Describe() {
+  return <div>describe</div>
+}
+export function DetailInfor() {
+  return <div>DetailInfor</div>
 }

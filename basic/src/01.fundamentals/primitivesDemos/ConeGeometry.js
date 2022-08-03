@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import addTitle from '../../utils/addTitle'
+import autoResize from '../../utils/autoResize'
 
 function createObj(geometryParams, color, x) {
   // ConeGeometry 参数 geometryParams
@@ -18,12 +18,9 @@ function createObj(geometryParams, color, x) {
 }
 
 // 锥形
-export function ConeGeometry(container) {
-  addTitle(container, 'ConeGeometry-锥体、缺角锥体')
-  const renderer = new THREE.WebGLRenderer({ antialias: true })
-  renderer.setSize(600, 300)
+export function Demo(canvas) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   // renderer.setClearColor(new THREE.Color(0xdcdcdc)) //设置窗口背景颜色为黑
-  container.appendChild(renderer.domElement)
 
   const camera = new THREE.PerspectiveCamera(75, 2, 0.1, 100)
   camera.position.z = 20
@@ -51,6 +48,7 @@ export function ConeGeometry(container) {
   })
 
   requestAnimationFrame(render)
+  autoResize(renderer)
 
   function render(time) {
     time *= 0.001
@@ -64,4 +62,13 @@ export function ConeGeometry(container) {
     renderer.render(scene, camera)
     requestAnimationFrame(render)
   }
+}
+
+export const title = 'ConeGeometry-锥体、缺角锥体'
+
+export function Describe() {
+  return <div>describe</div>
+}
+export function DetailInfor() {
+  return <div>DetailInfor</div>
 }
