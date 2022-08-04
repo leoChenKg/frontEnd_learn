@@ -18,14 +18,31 @@ const BaseConfig = () => {
     module: {
       rules: [
         {
-          test: /\.(js|jsx|ts|tsx)$/,
+          test: /\.(js|jsx|ts|tsx)$/i,
           exclude: /(node_modules)/,
           use: ['babel-loader']
         },
         {
-          test: /\.css$/,
+          test: /\.css$/i,
           exclude: /(node_modules)/,
           use: ['style-loader', 'css-loader']
+        },
+
+        {
+          test: /\.(woff|woff2|eot|otf)$/i,
+          type: 'asset/resource',
+          generator: {
+            filename: 'assets/fonts/[name].[contenthash:8].[ext]'
+          }
+        },
+        {
+          test: /\.(png|jpg|jpng|gif|svg)$/i,
+          type: 'asset',
+          parser: {
+            dataUrlCondition: {
+              maxSize: 4 * 1024
+            }
+          }
         }
       ]
     },

@@ -1,4 +1,4 @@
-import DemoWrapper from './DemoWrapper'
+import DemoWrapper from '../demo/DemoWrapper'
 
 export default function Primitives({ demos }) {
   return (

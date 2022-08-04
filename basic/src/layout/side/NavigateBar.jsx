@@ -1,12 +1,17 @@
 import { Link } from 'react-router-dom'
 import styles from './NavigateBar.module.css'
+// import { s } from '../../utils/separator'
 
 function Nav(props) {
   return <ul>{props.routes ? props.routes.map(item => <LinkItem key={item.path} route={item} />) : props.children}</ul>
 }
 
 function LinkItem(props) {
-  return <li>{props.route.path ? <Link to={props.route.path}>{props.route.name}</Link> : props.route.name}</li>
+  return (
+    <li className={styles['li-nowrap']}>
+      {props.route.path ? <Link to={props.route.path}>{props.route.name}</Link> : props.route.name}
+    </li>
+  )
 }
 
 const ComponentsList = (routes, baseUrl = '') => {
@@ -25,12 +30,22 @@ const ComponentsList = (routes, baseUrl = '') => {
 }
 
 export default function NavigateBar(props) {
-  const Components = ComponentsList(props.routes)
-  
+  const { routes, show } = props
+  const Components = ComponentsList(routes)
+// const
+//   let NavConClass = [
+//     styles.NavCon,
+//     styles
+//   ].join(' ')
+
+//   s({})
+
   return (
-    <div className={styles.NavCon}>
+    <div className={[styles.NavCon].join(' ')}>
       <div className={styles.logoCon}>
-        {/* <h1><Link to="/">Home</Link></h1> */}
+        <h1>
+          <Link to="/">Home</Link>
+        </h1>
       </div>
       <div className={styles.NavigateBarCon}>
         <Nav>{Components}</Nav>

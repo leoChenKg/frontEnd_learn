@@ -1,4 +1,4 @@
-import Main from '../layout/Main'
+import Main from '../layout/main/Main'
 import primitivesDemos from '../01.fundamentals/primitivesDemos'
 import basicUseDemos from '../01.fundamentals/basicUseDemos'
 
