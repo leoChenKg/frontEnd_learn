@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <div>
       <div style={styles}>test</div>
-      <h2>FrontEnd Learn...</h2>
+      <h2>FrontEnd Learn... </h2>
     </div>
   )
 }
