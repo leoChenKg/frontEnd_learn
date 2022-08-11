@@ -1,4 +1,4 @@
-import Main from '../layout/main/Main'
+import ThreeMain from '../layout/main/ThreeMain'
 import primitivesDemos from '../modules/three/01.fundamentals/primitivesDemos'
 import basicUseDemos from '../modules/three/01.fundamentals/basicUseDemos'
 
@@ -14,25 +14,14 @@ const routes = [
           {
             path: '/basic-use',
             name: '简单使用',
-            element: <Main key="basic-use" demos={basicUseDemos} />
+            element: <ThreeMain key="basic-use" demos={basicUseDemos} />
           },
           {
             path: '/primitives',
             name: '图元',
-            element: <Main key="primitives" demos={primitivesDemos} />
+            element: <ThreeMain key="primitives" demos={primitivesDemos} />
           }
         ]
-      }
-    ]
-  },
-  {
-    base: '/sass',
-    name: 'Sass',
-    children: [
-      {
-        path: '/syntax',
-        name: '语法',
-        element: <div>语法</div>
       }
     ]
   }
