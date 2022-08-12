@@ -1,31 +1,17 @@
-/**
- * [
- *   [form , to, weight ]
- * ]
- */
-let graph = [
-  [1, 2, 1],
-  [1, 3, 1],
-  [1, 4, 1],
-  [2, 5, 1],
-  [3, 5, 1],
-  [3, 6, 1],
-  [4, 6, 1],
-  [5, 7, 1],
-  [6, 7, 1]
-]
+// 1. 图结构
+// 2. 拓扑排序
+
+// options [ [nodeId, nextNodeId] ]
 
 class Node {
-  constructor(id, data) {
+  constructor(id) {
     this.id = id
-    this.data = data
     this.in = 0
     this.out = 0
+    this.next = []
     this.edges = []
-    this.nexts = []
   }
 }
-
 class Edge {
   constructor(from, to, weight) {
     this.from = from
@@ -34,108 +20,57 @@ class Edge {
   }
 }
 class Graph {
-  constructor(nodeList) {
-    this.nodeList = nodeList
-    this.helpList = {}
-    this.edges = []
+  constructor(options) {
     this.nodes = []
-    this.init()
+    this.edges = []
+    this.init(options)
   }
 
-  init() {
-    this.nodeList.forEach(item => {
-      let [from, to, weight] = item
-      if (!this.helpList[from]) {
-        this.helpList[from] = new Node(from)
-        this.nodes.push(this.helpList[from])
+  init(options = []) {
+    const nodesMap = new Map() // key: id ,value: node
+    options.forEach(([id, nextId, weight]) => {
+      const node = nodesMap.has(id) ? nodesMap.get(id) : new Node(id)
+      const nextNode = nodesMap.has(nextId) ? nodesMap.get(nextId) : new Node(nextId)
+      nodesMap.set(id, node)
+      nodesMap.set(nextId, nextNode)
+      if (!node.next.includes(nextNode)) {
+        node.next.push(nextNode)
+        const edge = new Edge(node, nextNode, weight)
+        node.edges.push(edge)
+        this.edges.push(edge)
+        node.out++
+        nextNode.in++
       }
-      if (!this.helpList[to]) {
-        this.helpList[to] = new Node(to)
-        this.nodes.push(this.helpList[to])
+      if (!this.nodes.includes(node)) this.nodes.push(node)
+      if (!this.nodes.includes(nextNode)) this.nodes.push(nextNode)
+    })
+  }
+}
+
+//  拓扑排序 -- 入度表算法
+function tupSort(graph) {
+  const nodes = graph.nodes
+  const nodesInMap = new Map() // 入度表
+  const zeroInNodeList = [] // 入度为 0 的节点 list
+  const res = [] // 结果
+
+  nodes.forEach(node => {
+    if (node.in === 0) {
+      zeroInNodeList.push(node)
+    }
+    nodesInMap.set(node, node.in)
+  })
+
+  while (zeroInNodeList.length > 0) {
+    const curNode = zeroInNodeList.shift()
+    res.push(curNode)
+    curNode.next.forEach(node => {
+      nodesInMap.set(node, nodesInMap.get(node) - 1)
+      if (nodesInMap.get(node) === 0) {
+        zeroInNodeList.push(node)
       }
-      const fromNode = this.helpList[from]
-      const toNode = this.helpList[to]
-      const edge = new Edge(fromNode, toNode, weight)
-      fromNode.nexts.push(toNode)
-      fromNode.edges.push(edge)
-      fromNode.out++
-      toNode.in++
     })
   }
 
-  // 广度优先遍历
-  bfs(cb) {
-    if (this.nodes.length <= 0) return
-    const helpList = []
-    const queue = []
-    queue.push(this.nodes[0])
-    helpList.push(this.nodes[0])
-
-    while (queue.length > 0) {
-      debugger
-      const curNode = queue.shift()
-      cb(curNode)
-      for (const next of curNode.nexts) {
-        if (!helpList.includes(next)) {
-          helpList.push(next)
-          queue.push(next)
-        }
-      }
-    }
-  }
-
-  // 深度优先遍历
-  dfs(cb) {
-    if (this.nodes.length <= 0) return
-    const helpList = []
-    const stack = []
-    stack.push(this.nodes[0])
-    helpList.push(this.nodes[0])
-    cb(this.nodes[0])
-
-    while (stack.length > 0) {
-      const curNode = stack.pop()
-
-      for (const next of curNode.nexts) {
-        if (!helpList.includes(next)) {
-          stack.push(curNode)
-          stack.push(next)
-          helpList.push(next)
-          cb(next)
-          break
-        }
-      }
-    }
-  }
-
-  // 拓扑排序
-  toSort() {
-    // key:node
-    // value:入度
-    const map = new Map()
-    // 入度为 0 的list
-    const zeroList = []
-    for (const node of this.nodes) {
-      // 入度表
-      map.set(node, node.in)
-      // 记录所有入度为 0  的点
-      if (node.in == 0) {
-        zeroList.push(node)
-      }
-    }
-
-    const result = []
-    while (zeroList.length > 0) {
-      const curNode = zeroList.shift()
-      result.push(curNode)
-
-      for (const next of curNode.nexts) {
-        map.set(next, map.get(next) - 1)
-        if (map.get(next) == 0) {
-          zeroList.push(next)
-        }
-      }
-    }
-    return result
-  }
+  return res
 }
