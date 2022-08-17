@@ -1,4 +1,5 @@
 import { REACT_TEXT } from './utils'
+import { addEvent } from './event'
 
 /**
  * 把虚拟dom 转换成 真实 真实dom 再插入到 容器中
@@ -41,6 +42,8 @@ function createDOM(vdom) {
     let children = Array.isArray(props.children) ? props.children : props.children ? [props.children] : []
     children.forEach(child => mount(child, dom))
   }
+  // 在创建真实dom时把虚拟dom和真实dom建立关联
+  vdom.dom = dom
   return dom
 }
 
@@ -51,7 +54,10 @@ function createDOM(vdom) {
 function mountFounctionComponent(vdom) {
   const { type: FounctionComponent, props } = vdom
   const renderVdom = FounctionComponent(props)
-  return createDOM(renderVdom)
+  // 缓存上次生成的虚拟dom（放在函数组件的vdom上） 以便下次dom跟新时使用
+  vdom.oldRenderVdom = renderVdom
+  let dom = createDOM(renderVdom)
+  return dom
 }
 
 /**
@@ -60,8 +66,17 @@ function mountFounctionComponent(vdom) {
  */
 function mountClassComponent(vdom) {
   const { type: ClassComponent, props } = vdom
+
   const renderInstance = new ClassComponent(props)
-  return createDOM(renderInstance.render())
+  console.log(vdom)
+  vdom.classInstance = renderInstance
+
+  const renderVdom = renderInstance.render()
+  // 缓存上次生成的虚拟dom（放在组件实例上） 以便下次dom跟新时使用
+  renderInstance.oldRenderVdom = renderVdom
+
+  let dom = createDOM(renderVdom)
+  return dom
 }
 /**
  * 跟新dom的props
@@ -80,7 +95,8 @@ function updateProps(dom, oldProps, newProps) {
         dom.style[attr] = styleObj[attr]
       }
     } else if (/^on[A-Z].*/.test(key)) {
-      dom[key.toLowerCase()] = newProps[key]
+      // dom[key.toLowerCase()] = newProps[key]
+      addEvent(dom, key.toLowerCase(), newProps[key])
     } else {
       dom[key] = newProps[key]
     }
@@ -93,6 +109,24 @@ function updateProps(dom, oldProps, newProps) {
       dom[key] = null
     }
   }
+}
+
+// 根据虚拟dom找到真实dom
+export function findDom(vdom) {
+  if (!vdom) return null
+  if (vdom.dom) {
+    return vdom.dom
+  } else {
+    let renderVdom = vdom.classInstance ? vdom.classInstance.oldRenderVdom : vdom.oldRenderVdom
+    return findDom(renderVdom)
+  }
+}
+
+// 新老虚拟dom对比
+export function compareTwoVdom(parentDOM, oldVdom, newVdom) {
+  let oldDom = findDom(oldVdom) // 得到老的真实 dom
+  let newDom = createDOM(newVdom) // 得到新的真实 dom
+  parentDOM.replaceChild(newDom, oldDom)
 }
 
 const ReactDOM = {

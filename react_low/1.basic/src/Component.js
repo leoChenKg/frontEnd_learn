@@ -1,3 +1,17 @@
+import { findDom, compareTwoVdom } from './react-dom'
+
+export let updateQueue = (window.updateQueue = {
+  isBatchingUpdate: false, // 是否批量更新
+  updaters: new Set(),
+  batchUpdate() {
+    updateQueue.isBatchingUpdate = false
+    for (const updater of updateQueue.updaters) {
+      updater.updateComponent()
+    }
+    updateQueue.updaters.clear()
+  }
+})
+
 class Updater {
   constructor(classInstance) {
     this.classInstance = classInstance
@@ -16,7 +30,11 @@ class Updater {
 
   emitUpdate() {
     // 更新
-    this.updateComponent()
+    if (updateQueue.isBatchingUpdate) {
+      updateQueue.updaters.add(this) // set 数据结构的原因 相同的值只会添加一次
+    } else {
+      this.updateComponent()
+    }
   }
 
   updateComponent() {
@@ -65,7 +83,11 @@ class Component {
   }
 
   forceUpdate() {
-    console.log('fouceupdate', this.state)
+    const oldRenderVdom = this.oldRenderVdom // 拿到老的 vdom
+    const oldDom = findDom(oldRenderVdom) // 通过老的 vdom 得到老的 真实的 dom 结构
+    const newRenderVdom = this.render() // 得到新的虚拟dom（在内存中）
+    compareTwoVdom(oldDom.parentNode, oldRenderVdom, newRenderVdom)
+    this.oldRenderVdom = newRenderVdom // 更新老的虚拟dom为新的虚拟dom
   }
 }
 
