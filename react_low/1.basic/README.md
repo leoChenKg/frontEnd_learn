@@ -1,70 +1,40 @@
-# Getting Started with Create React App
+## 新老 jsx 转换器
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+* 老转换器
+```js
+React.createElement('div', ..., ...)
+```
+在编译时 babel 将 jsx 转换成 如上形式的函数调用生成 react 组件
+由于编译后调用的是 React 上的方法，那么必须提前引入 React `import React from 'react` 即便在写 jsx 中没用到 React，有些许怪异
 
-In the project directory, you can run:
+* 新版 (React 17 后)
+```js
+import jsx from 'jsx'
+jsx('div', ..., ...) 
+```
+在编译时自动引入代码转换和工具包，那么在书写 jsx 时就不需要提前引入 React 了，只有在需要用的时候才引入 React。
 
-### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 2022 7.13 jsx 基本实现
+* bable 把 jsx 编译 转换代码 --> React.createElement ...
+* React.createElement(type, config, child1, child2, ...)  根据 jsx 解析的结果参数 生成 虚拟 dom ，如下
+```js
+{
+    $$typeof: Symbol(react.element),
+    key: undefined,
+    props:,
+    children: [{…}, {…}],
+    ref: undefined,
+    type: "div"
+}
+```
+* ReactDOM.render(vdom, rootElement) 接收虚拟dom生成真实 dom 并挂在到父容器中 
+  递归孩子节点生成 真实dom ，并跟新设置 dom 的属性
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+* 根据虚拟dom 的类型（text class function dom）生成 dom 
+* 合成事件
+* 更新流程
+    * 同步跟新：调用state-》 类组件中的updater实例收集（this.update.addState） -》执行触发更新函数（emitUpdate）-> 将收集的 partail state 合并到老状态上，得到新状态 （this.update.getState）-> 再更新状态（this.updateComponent）-》判断是否要跟新此组件（shouldUpdate） -》 如果要跟新 直接将新生成的 nextState 复制给类实例的state，然后再执行组件实例的强制更新试图 （this.forceUpdate）
+    * 批量更新
