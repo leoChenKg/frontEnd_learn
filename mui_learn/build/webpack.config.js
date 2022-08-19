@@ -6,56 +6,35 @@ const BaseConfig = () => {
   return {
     devtool: 'source-map',
     mode: 'development',
-    entry: './src/index.ts',
+    entry: './src/index.tsx',
     output: {
       filename: 'main.js',
       path: path.resolve(__dirname, 'dist'),
       publicPath: '/'
     },
     resolve: {
+      alias: {
+        '@utils': path.resolve(__dirname, '../src/utils')
+      },
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json']
     },
     module: {
       rules: [
         {
-          test: /\.(js|jsx|ts|tsx)$/i,
+          test: /\.(js|jsx)$/i,
+          exclude: /(node_modules)/,
+          use: ['babel-loader']
+        },
+        {
+          test: /\.(ts|tsx)$/i,
           exclude: /(node_modules)/,
           use: ['babel-loader', 'ts-loader']
         },
         {
           test: /\.css$/i,
           exclude: /(node_modules)/,
-          use: [
-            'style-loader',
-            'css-loader',
-            {
-              loader: 'postcss-loader',
-              options: {
-                postcssOptions: {
-                  plugins: [['postcss-preset-env']]
-                }
-              }
-            }
-          ]
+          use: ['style-loader', 'css-loader']
         },
-        {
-          test: /\.(scss|sass)$/i,
-          exclude: /(node_modules)/,
-          use: [
-            'style-loader',
-            'css-loader',
-            {
-              loader: 'postcss-loader',
-              options: {
-                postcssOptions: {
-                  plugins: [['postcss-preset-env']]
-                }
-              }
-            },
-            'sass-loader'
-          ]
-        },
-
         {
           test: /\.(woff|woff2|eot|otf)$/i,
           type: 'asset/resource',
