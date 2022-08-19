@@ -1,5 +1,6 @@
 import { REACT_TEXT } from './utils'
 import { addEvent } from './event'
+import { REACT_FORWARD_REF } from './element'
 
 /**
  * 把虚拟dom 转换成 真实 真实dom 再插入到 容器中
@@ -21,10 +22,13 @@ function mount(vdom, container) {
  * @param {*} vdom
  */
 function createDOM(vdom) {
-  let { type, props } = vdom
+  let { type, props, ref } = vdom
   let dom
-  // 纯文本节点
-  if (type === REACT_TEXT) {
+
+  if (type && type.$$typeof === REACT_FORWARD_REF) {
+    return mountForwardRefComponent(vdom)
+  } else if (type === REACT_TEXT) {
+    // 纯文本节点
     dom = document.createTextNode(props)
   } else if (typeof type === 'function') {
     if (type.isReactComponent) {
@@ -44,6 +48,21 @@ function createDOM(vdom) {
   }
   // 在创建真实dom时把虚拟dom和真实dom建立关联
   vdom.dom = dom
+  if (ref) ref.current = dom
+  return dom
+}
+
+/**
+ * 处理 forwardRef组件
+ * @param {*} vdom
+ * @returns
+ */
+function mountForwardRefComponent(vdom) {
+  const { type, props, ref } = vdom
+  const { render } = type
+  const renderVdom = render(props, ref)
+  vdom.oldRenderVdom = renderVdom
+  let dom = createDOM(renderVdom)
   return dom
 }
 
@@ -52,8 +71,8 @@ function createDOM(vdom) {
  * @param {*} vdom
  */
 function mountFounctionComponent(vdom) {
-  const { type: FounctionComponent, props } = vdom
-  const renderVdom = FounctionComponent(props)
+  const { type: FounctionComponent, props, ref } = vdom
+  const renderVdom = FounctionComponent(props, ref)
   // 缓存上次生成的虚拟dom（放在函数组件的vdom上） 以便下次dom跟新时使用
   vdom.oldRenderVdom = renderVdom
   let dom = createDOM(renderVdom)
@@ -65,10 +84,10 @@ function mountFounctionComponent(vdom) {
  * @param {*} vdom
  */
 function mountClassComponent(vdom) {
-  const { type: ClassComponent, props } = vdom
+  const { type: ClassComponent, props, ref } = vdom
 
   const renderInstance = new ClassComponent(props)
-  console.log(vdom)
+  if (ref) ref.current = renderInstance
   vdom.classInstance = renderInstance
 
   const renderVdom = renderInstance.render()
@@ -76,6 +95,9 @@ function mountClassComponent(vdom) {
   renderInstance.oldRenderVdom = renderVdom
 
   let dom = createDOM(renderVdom)
+  if (renderInstance.componentDidMount) {
+    renderInstance.componentDidMount()
+  }
   return dom
 }
 /**

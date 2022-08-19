@@ -102,6 +102,100 @@ clickHandler = () => {
 
 #### 合成事件
 
-- 在创建真实 dom 的时候给 dom 上添加一个属性 store ，它用来保存所有的事件处理函数（键值对，键：事件名称，值：处理函数），向其中添加该事件，然后在再把该事件类型绑定到 document 上面，进行**事件委托**。它的事件处理流程是，在目标dom上触发绑定过的事件，然后冒泡到 document 上，由于之绑定过该事件，所以执行委托处理函数，先开启批量更新，然后通过 event 对象去获取到事件的 target 和 eventType， 尝试去获取 `target.store[eventType]` 该事件的处理函数 ，如果有那么就执行，最后关闭批量更新。
+> 2022 8.19 完善
+> 合成事件是用来抹平浏览器之间差异的
 
-TODO react 18 新特性
+- 在创建真实 dom 的时候给 dom 上添加一个属性 store ，它用来保存所有的事件处理函数（键值对，键：事件名称，值：处理函数），向其中添加该事件，然后在再把该事件类型绑定到 document 上面，进行**事件委托**。它的事件**处理流程**是，在目标 dom 上触发绑定过的事件，然后冒泡到 document 上，由于之绑定过该事件，所以执行委托处理函数，先开启批量更新，然后通过 event 对象去获取到事件的 target 和 eventType， 尝试去获取 `target.store[eventType]` 该事件的处理函数 ，如果有那么就执行（**执行过程**），最后关闭批量更新。
+
+上述加粗的 '处理流程' 中有重要的步骤：通过原生事件对象得到一个新的合成事件对象，其中包括添加了 `isPropagationStopped`、`isPreventDefault` 等判断属性还统一封装了一些有兼容性问题的操作的方法，如 `preventDefault()` `stopPropagation()` 。。。
+上述加粗的 '执行过程' 中有重要的步骤：**模拟事件的冒泡和捕获**
+
+### 2022 8.19
+
+#### 实现 ref
+
+ref 用来获取组件中的真实 dom 元素、获取子组件暴露的方法
+基本使用方式如下
+
+```jsx
+class App extends React.Component {
+  ref = React.createRef()
+  handler = () => {
+    this.ref.current.focus()
+  }
+  render() {
+    return (
+      <div>
+        <button onClick={this.handler}>focus input</button>
+        <input ref={ref} />
+      </div>
+    )
+  }
+}
+```
+
+如果 ref 直接用在原生 dom 上那么 current 的值就是 dom，如果用在类组件上 current 的值就是该组件实例，**如果使用到函数组件上那么会报错**
+想要在函数组件中使用 ref 必须通过 React.forwardRef() 来实现：
+
+```jsx
+function Element(props, outerRef) {
+  const ref = React.createRef()
+
+  /* 给转发过来的 outerRef 赋值为一想要暴露的数据 */
+  outerRef.current = {
+    getFocus: () => ref.current.focus(),
+    extraData: {
+      /*....*/
+    }
+  }
+  return (
+    <div>
+      <input ref={ref} defaultValue="函数组件" />
+    </div>
+  )
+}
+/* 使用  forwardRef 转发 ref 到函数组件内部*/
+const NewElement = React.forwardRef(Element)
+
+class App extends React.Component {
+  ref = React.createRef()
+  handler = () => {
+    this.ref.current.getFocus()
+  }
+  render() {
+    return (
+      <div>
+        <button onClick={this.handler}>click</button>
+        <NewElement ref={this.ref} />
+      </div>
+    )
+  }
+}
+ReactDOM.render(<App />, document.getElementById('root'))
+```
+
+ref 实现的原理是：在通过虚拟 dom 创建真实 dom 的时候把虚拟 dom 中的 ref：
+
+1. 原生 dom：把 ref.current 赋值为 dom
+2. 类组件：把 ref.current 赋值为当前组件的实例
+3. 函数组件：通过 React.forwardRef 返回的函数组件生成的 vdom 结构如下，把 ref 作为第二个参数传入 render 函数中，在函数中由用户控制赋值。
+
+```js
+{
+  $$typeof: Symbol('react.forward_ref'), render // 传入 React.forwardRef 的函数组件
+}
+```
+
+#### 生命周期
+
+[生命周期图](https://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/)
+
+- static getDerivedStateFromProps(props, state) {}
+- shouldComponentUpdate(nextProps, nextState){}
+- render(){}
+- componentDidMount() {}
+- getSnapshotBeforeUpdate(prevProps, prevState){}
+- componentDidUpdate(props, state, snapshot){}
+- componentWillUnmount(){}
+
+TODO react 18 新特性 、hooks 使用（阅读 mui）

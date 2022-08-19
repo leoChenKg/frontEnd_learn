@@ -64,16 +64,34 @@ class Updater {
 
 // 是否要更新
 function shouldUpdate(classInstance, nextState) {
+  let derivedStateFromProps
+  if (classInstance.constructor.getDerivedStateFromProps) {
+    derivedStateFromProps = classInstance.constructor.getDerivedStateFromProps(classInstance.props, nextState)
+    if (typeof derivedStateFromProps === 'object') {
+      nextState = derivedStateFromProps
+    }
+  }
+  let willUpdate = true
+  if (classInstance.shouldComponentUpdate && !classInstance.shouldComponentUpdate(classInstance.props, nextState)) {
+    willUpdate = false
+  }
+  const preState = classInstance.state
+  const preProps = classInstance.props
   // 把新状态赋值给类的实例
   classInstance.state = nextState
-  // 强制更新类组件 重新渲染
-  classInstance.forceUpdate()
+  if (willUpdate) {
+    // 强制更新类组件 重新渲染
+    classInstance.forceUpdate(preProps, preState)
+  }
 }
 
 class Component {
   static isReactComponent = true
   constructor(props) {
-    this.props = props
+    if (this.constructor.defaultProps) {
+      this.props = this.constructor.defaultProps
+    }
+    this.props = { ...this.props, ...props }
     // 每个类组件都有自己的update更新器
     this.updater = new Updater(this)
   }
@@ -82,12 +100,19 @@ class Component {
     this.updater.addState(partailState)
   }
 
-  forceUpdate() {
+  forceUpdate(preProps, preState) {
     const oldRenderVdom = this.oldRenderVdom // 拿到老的 vdom
     const oldDom = findDom(oldRenderVdom) // 通过老的 vdom 得到老的 真实的 dom 结构
     const newRenderVdom = this.render() // 得到新的虚拟dom（在内存中）
+    let snapshot
+    if (this.getSnapshotBeforeUpdate) {
+      snapshot = this.getSnapshotBeforeUpdate(preProps, preState)
+    }
     compareTwoVdom(oldDom.parentNode, oldRenderVdom, newRenderVdom)
-    this.oldRenderVdom = newRenderVdom // 更新老的虚拟dom为新的虚拟dom
+    this.oldRenderVdom = newRenderVdom // 更新老的虚拟dom为新的虚拟dom'
+    if (this.componentDidUpdate) {
+      this.componentDidUpdate(preProps, preState, snapshot)
+    }
   }
 }
 

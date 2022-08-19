@@ -1,4 +1,4 @@
-import { REACT_ELEMENT } from './element'
+import { REACT_ELEMENT, REACT_FORWARD_REF } from './element'
 import { wrapToVdom } from './utils'
 import { Component } from './Component'
 function createElement(type, config, children) {
@@ -22,7 +22,7 @@ function createElement(type, config, children) {
     // 只有一个儿子
     props.children = wrapToVdom(children)
   }
-
+  if (!props.children) delete props.children
   return {
     $$typeof: REACT_ELEMENT,
     type, // dom 的元素类型
@@ -32,9 +32,23 @@ function createElement(type, config, children) {
   }
 }
 
+function createRef() {
+  return { current: null }
+}
+
+// 返回的是 一个对象
+function forwardRef(render) {
+  return {
+    $$typeof: REACT_FORWARD_REF,
+    render
+  }
+}
+
 const React = {
   createElement,
-  Component
+  Component,
+  createRef,
+  forwardRef
 }
 
 export default React
