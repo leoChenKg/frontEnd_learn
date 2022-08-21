@@ -16,11 +16,12 @@ function createElement(type, config, children) {
 
   // 处理 children 的形式
   // 有多个儿子
+
   if (arguments.length > 3) {
     props.children = Array.prototype.slice.call(arguments, 2).map(child => wrapToVdom(child))
   } else {
     // 只有一个儿子
-    props.children = wrapToVdom(children)
+    if (children) props.children = wrapToVdom(children)
   }
   if (!props.children) delete props.children
   return {

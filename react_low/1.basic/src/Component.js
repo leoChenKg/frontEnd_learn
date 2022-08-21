@@ -1,4 +1,5 @@
 import { findDom, compareTwoVdom } from './react-dom'
+import { wrapToVdom } from './utils'
 
 export let updateQueue = (window.updateQueue = {
   isBatchingUpdate: false, // 是否批量更新
@@ -28,7 +29,7 @@ class Updater {
     this.emitUpdate()
   }
 
-  emitUpdate() {
+  emitUpdate(nextProps) {
     // 更新
     if (updateQueue.isBatchingUpdate) {
       updateQueue.updaters.add(this) // set 数据结构的原因 相同的值只会添加一次
@@ -103,7 +104,7 @@ class Component {
   forceUpdate(preProps, preState) {
     const oldRenderVdom = this.oldRenderVdom // 拿到老的 vdom
     const oldDom = findDom(oldRenderVdom) // 通过老的 vdom 得到老的 真实的 dom 结构
-    const newRenderVdom = this.render() // 得到新的虚拟dom（在内存中）
+    const newRenderVdom = wrapToVdom(this.render()) // 得到新的虚拟dom（在内存中）
     let snapshot
     if (this.getSnapshotBeforeUpdate) {
       snapshot = this.getSnapshotBeforeUpdate(preProps, preState)

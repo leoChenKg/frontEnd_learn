@@ -6,7 +6,7 @@ export function wrapToVdom(element) {
   return typeof element == 'string' || typeof element == 'number'
     ? {
         type: REACT_TEXT,
-        props: element
+        props: element // 如果是 text 的话 props的值就是文本值
       }
     : element
 }

@@ -1,4 +1,4 @@
-import { REACT_TEXT } from './utils'
+import { REACT_TEXT, wrapToVdom } from './utils'
 import { addEvent } from './event'
 import { REACT_FORWARD_REF } from './element'
 
@@ -72,7 +72,7 @@ function mountForwardRefComponent(vdom) {
  */
 function mountFounctionComponent(vdom) {
   const { type: FounctionComponent, props, ref } = vdom
-  const renderVdom = FounctionComponent(props, ref)
+  const renderVdom = wrapToVdom(FounctionComponent(props, ref))
   // 缓存上次生成的虚拟dom（放在函数组件的vdom上） 以便下次dom跟新时使用
   vdom.oldRenderVdom = renderVdom
   let dom = createDOM(renderVdom)
@@ -90,7 +90,7 @@ function mountClassComponent(vdom) {
   if (ref) ref.current = renderInstance
   vdom.classInstance = renderInstance
 
-  const renderVdom = renderInstance.render()
+  const renderVdom = wrapToVdom(renderInstance.render())
   // 缓存上次生成的虚拟dom（放在组件实例上） 以便下次dom跟新时使用
   renderInstance.oldRenderVdom = renderVdom
 
@@ -146,11 +146,84 @@ export function findDom(vdom) {
 
 // 新老虚拟dom对比
 export function compareTwoVdom(parentDOM, oldVdom, newVdom) {
-  let oldDom = findDom(oldVdom) // 得到老的真实 dom
-  let newDom = createDOM(newVdom) // 得到新的真实 dom
-  parentDOM.replaceChild(newDom, oldDom)
+  // dom diff
+  if (!oldVdom && !newVdom) return null
+  if (oldVdom && !newVdom) {
+    // 如果是原来有 现在没有 vdom 直接卸载老结构
+    unmountVdom(oldVdom)
+  } else if (!oldVdom && newVdom) {
+    let newDOM = createDOM(newVdom) //   TODO 此处有问题 后面解决
+    parentDOM.appendChild(newDOM)
+  } else if (oldVdom && newVdom && oldVdom.type !== newVdom.type) {
+    unmountVdom(oldVdom)
+    let newDOM = createDOM(newVdom) //   TODO 此处有问题 后面解决
+    parentDOM.appendChild(newDOM)
+  } else {
+    // 老的存在新的也存在并且类型相同
+    // 进行深度的dom比对 （dom diff）
+    updateElement(oldVdom, newVdom)
+  }
 }
 
+// 去掉vdom 对应的真实dom
+function unmountVdom(vdom) {
+  const { ref, props } = vdom
+  const currentDom = findDom(vdom)
+  if (vdom.classInstance && vdom.classInstance.componentWillUnmount) {
+    vdom.classInstance.componentWillUnmount() // 执行组件卸载的生命周期函数
+  }
+  if (props.children) {
+    let children = Array.isArray(props.children) ? props.children : [props.children]
+    children.forEach(unmountVdom) // 递归卸载老结构 （字结构也有生命周期需要执行）
+  }
+  if (ref) ref.current = null
+  if (currentDom) currentDom.remove()
+}
+
+/**
+ * !!DOM DIFF!!
+ * @param {*} oldVdom
+ * @param {*} newVdom
+ */
+function updateElement(oldVdom, newVdom) {
+  if (oldVdom.type === REACT_TEXT) {
+    const currentDom = (newVdom.dom = findDom(oldVdom))
+    if (oldVdom.props !== newVdom.props) currentDom.textContent = newVdom.props
+  } else if (typeof oldVdom.type === 'string') {
+    // 都是原生节点，进行diff
+    const currentDom = (newVdom.dom = findDom(oldVdom))
+    updateProps(currentDom, oldVdom.props, newVdom.props)
+    updateChildren(currentDom, oldVdom.props.children, newVdom.props.children)
+  } else if (typeof oldVdom.type === 'function') {
+    if (oldVdom.classInstance.isReactComponent) {
+      // 类组件
+      updateClassComponent()
+    } else {
+      // 函数组件
+      updateFunctionComponent()
+    }
+  }
+}
+
+function updateChildren(currentDom, oldVChildren, newVChildren) {
+  oldVChildren = Array.isArray(oldVChildren) ? oldVChildren : [oldVChildren]
+  newVChildren = Array.isArray(newVChildren) ? newVChildren : [newVChildren]
+  let maxLen = Math.max(oldVChildren.length, newVChildren.length)
+  for (let i = 0; i < maxLen; i++) {
+    const newChildVdom = newVChildren[i] || null
+    const oldChildVom = oldVChildren[i] || null
+    compareTwoVdom(currentDom, oldChildVom, newChildVdom)
+  }
+}
+function updateClassComponent(oldVdom, newVdom) {
+  const classInstance = (newVdom.classInstance = oldVdom.classInstance)
+  if (classInstance.componentWillReceiveProps) { // 生命周期执行
+    //oldVdom.props newVdom.props  浅比较有变化才执行！！！
+    classInstance.componentWillReceiveProps(newVdom.props) // 将要接受新的属性
+  }
+  classInstance.emitUpdate(newVdom.props) // 更新类组件
+}
+function updateFunctionComponent(oldVdom, newVdom) {}
 const ReactDOM = {
   render
 }

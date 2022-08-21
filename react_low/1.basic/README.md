@@ -110,7 +110,7 @@ clickHandler = () => {
 上述加粗的 '处理流程' 中有重要的步骤：通过原生事件对象得到一个新的合成事件对象，其中包括添加了 `isPropagationStopped`、`isPreventDefault` 等判断属性还统一封装了一些有兼容性问题的操作的方法，如 `preventDefault()` `stopPropagation()` 。。。
 上述加粗的 '执行过程' 中有重要的步骤：**模拟事件的冒泡和捕获**
 
-### 2022 8.19
+### 2022 8.19 ref 不完全的生命周期
 
 #### 实现 ref
 
@@ -198,4 +198,11 @@ ref 实现的原理是：在通过虚拟 dom 创建真实 dom 的时候把虚拟
 - componentDidUpdate(props, state, snapshot){}
 - componentWillUnmount(){}
 
-TODO react 18 新特性 、hooks 使用（阅读 mui）
+### 2022 8.21 dom diff
+
+### DOM Diff
+
+> 将要更新组件的新老的虚拟 dom 结构进行精细化对比找到最小量更新的部分进行更新，不需要重新渲染整个组件。
+
+
+TODO react 18 新特性 、hooks 使用（阅读 mui）\array.every
