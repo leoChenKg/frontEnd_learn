@@ -30,6 +30,8 @@ class Updater {
   }
 
   emitUpdate(nextProps) {
+    // 把更新的属性加到实例上存下来
+    this.nextProps = nextProps
     // 更新
     if (updateQueue.isBatchingUpdate) {
       updateQueue.updaters.add(this) // set 数据结构的原因 相同的值只会添加一次
@@ -39,11 +41,11 @@ class Updater {
   }
 
   updateComponent() {
-    const { classInstance, pendingStates } = this
+    const { nextProps, classInstance, pendingStates } = this
     // 循环partail state 合并所有的新状态
-    if (pendingStates.length > 0) {
+    if (nextProps || pendingStates.length > 0) {
       // 表示有将要进行的更新
-      shouldUpdate(classInstance, this.getState())
+      shouldUpdate(classInstance, nextProps, this.getState())
     }
   }
 
@@ -64,7 +66,13 @@ class Updater {
 }
 
 // 是否要更新
-function shouldUpdate(classInstance, nextState) {
+function shouldUpdate(classInstance, nextProps, nextState) {
+  const preState = classInstance.state
+  const preProps = classInstance.props
+  // 有新的 props 就更新
+  if (nextProps) {
+    classInstance.props = nextProps
+  }
   let derivedStateFromProps
   if (classInstance.constructor.getDerivedStateFromProps) {
     derivedStateFromProps = classInstance.constructor.getDerivedStateFromProps(classInstance.props, nextState)
@@ -76,8 +84,7 @@ function shouldUpdate(classInstance, nextState) {
   if (classInstance.shouldComponentUpdate && !classInstance.shouldComponentUpdate(classInstance.props, nextState)) {
     willUpdate = false
   }
-  const preState = classInstance.state
-  const preProps = classInstance.props
+
   // 把新状态赋值给类的实例
   classInstance.state = nextState
   if (willUpdate) {

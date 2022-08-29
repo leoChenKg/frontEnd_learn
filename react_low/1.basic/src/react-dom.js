@@ -223,7 +223,10 @@ function updateClassComponent(oldVdom, newVdom) {
   }
   classInstance.emitUpdate(newVdom.props) // 更新类组件
 }
-function updateFunctionComponent(oldVdom, newVdom) {}
+function updateFunctionComponent(oldVdom, newVdom) {
+
+}
+
 const ReactDOM = {
   render
 }
